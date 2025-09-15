@@ -19,6 +19,11 @@
       "quoteStyle": "single"
     }
   },
+  "css": {
+    "formatter": {
+      "quoteStyle": "single"
+    }
+  },
   "linter": {
     "enabled": true,
     "rules": {
