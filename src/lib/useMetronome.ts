@@ -1,14 +1,50 @@
-import { useEffect, useRef, useState } from "react";
+import { type MutableRefObject, useEffect, useRef, useState } from "react";
 import { scheduleClick } from "./audio";
 
 const LOOK_AHEAD = 25; // ms
 const SCHEDULE_AHEAD = 0.1; // seconds
+const BEATS_PER_MEASURE = 3;
+
+type ScheduleFn = (ctx: AudioContext, time: number, accent: boolean) => void;
+
+interface SchedulerOptions {
+  ctx: AudioContext;
+  beatRef: MutableRefObject<number>;
+  nextNoteTime: MutableRefObject<number>;
+  bpm: number;
+  scheduleAhead: number;
+  scheduleClickFn: ScheduleFn;
+  onBeat: (beat: number) => void;
+}
+
+export function runMetronomeScheduler({
+  ctx,
+  beatRef,
+  nextNoteTime,
+  bpm,
+  scheduleAhead,
+  scheduleClickFn,
+  onBeat,
+}: SchedulerOptions) {
+  if (bpm <= 0) return;
+
+  while (nextNoteTime.current < ctx.currentTime + scheduleAhead) {
+    const beat = beatRef.current;
+    const isDownBeat = beat === 0;
+
+    scheduleClickFn(ctx, nextNoteTime.current, isDownBeat);
+    onBeat(beat);
+
+    nextNoteTime.current += 60 / bpm;
+    beatRef.current = (beat + 1) % BEATS_PER_MEASURE;
+  }
+}
 
 export function useMetronome(initialBpm = 120) {
   const [bpm, setBpmState] = useState(initialBpm);
   const bpmRef = useRef(bpm);
   const [isRunning, setIsRunning] = useState(false);
-  const [currentBeat, setCurrentBeat] = useState(0);
+  const [currentBeat, setCurrentBeat] = useState(-1);
   const beatRef = useRef(0);
   const nextNoteTime = useRef(0);
   const timer = useRef<number>(0);
@@ -27,10 +63,6 @@ export function useMetronome(initialBpm = 120) {
     }
   }, []);
 
-  useEffect(() => {
-    beatRef.current = currentBeat;
-  }, [currentBeat]);
-
   function init() {
     if (!ctxRef.current) {
       ctxRef.current = new AudioContext();
@@ -41,29 +73,35 @@ export function useMetronome(initialBpm = 120) {
   }
 
   function scheduler() {
-    const ctx = ctxRef.current!;
-    while (nextNoteTime.current < ctx.currentTime + SCHEDULE_AHEAD) {
-      scheduleClick(ctx, nextNoteTime.current, beatRef.current === 0);
-      nextNoteTime.current += 60 / bpmRef.current;
-      beatRef.current = (beatRef.current + 1) % 3;
-      setCurrentBeat(beatRef.current);
-    }
+    const ctx = ctxRef.current;
+    if (!ctx) return;
+    runMetronomeScheduler({
+      ctx,
+      beatRef,
+      nextNoteTime,
+      bpm: bpmRef.current,
+      scheduleAhead: SCHEDULE_AHEAD,
+      scheduleClickFn: scheduleClick,
+      onBeat: setCurrentBeat,
+    });
   }
 
   function start() {
     if (isRunning || bpmRef.current <= 0) return;
     init();
-    const ctx = ctxRef.current!;
+    const ctx = ctxRef.current;
+    if (!ctx) return;
     nextNoteTime.current = ctx.currentTime;
-    timer.current = window.setInterval(scheduler, LOOK_AHEAD);
     setIsRunning(true);
+    scheduler();
+    timer.current = window.setInterval(scheduler, LOOK_AHEAD);
   }
 
   function stop() {
     if (!isRunning) return;
     window.clearInterval(timer.current);
     setIsRunning(false);
-    setCurrentBeat(0);
+    setCurrentBeat(-1);
     beatRef.current = 0;
   }
 
