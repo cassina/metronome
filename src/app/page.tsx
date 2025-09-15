@@ -34,7 +34,7 @@ export default function MetronomeClient() {
   }, [bpm, isRunning, setBpm, start, stop]);
 
   const beatLabel =
-    bpm === 0 || !isRunning ? 'Paused' : `Beat ${Math.max(currentBeat, 0) + 1}`;
+    bpm === 0 || !isRunning ? 'Paused' : `${Math.max(currentBeat, 0) + 1}`;
 
   const buttonStateClasses = isRunning
     ? 'from-[#5eead4] via-[#34d399] to-[#2dd4bf] text-slate-950 shadow-[0_28px_65px_rgba(45,212,191,0.35)] hover:shadow-[0_34px_75px_rgba(45,212,191,0.42)]'
@@ -105,23 +105,23 @@ export default function MetronomeClient() {
         <div className="flex w-full max-w-md flex-col items-center gap-8 rounded-[2.5rem] border border-white/10 bg-white/[0.05] px-6 py-9 text-center shadow-[0_40px_95px_rgba(5,8,24,0.7)] backdrop-blur-2xl sm:px-10 sm:py-12">
           <div className="flex flex-col items-center gap-4">
             <span
-              className="rounded-full border border-white/20 bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-slate-200"
+              className="rounded-full border border-white/20 bg-white/10 px-4 py-1 text-7xl font-semibold uppercase tracking-[0.4em] text-slate-200"
               aria-live="polite"
             >
               {beatLabel}
             </span>
             <div className="flex items-baseline gap-2">
-              <span className="font-display text-6xl font-semibold tracking-tight text-white sm:text-7xl">
+              <span className="font-display font-semibold text-white sm:text-7xl">
                 {bpm}
               </span>
-              <span className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-300">
+              <span className="font-semibold uppercase tracking-[0.35em] text-slate-300">
                 bpm
               </span>
             </div>
             <p className="max-w-[18rem] text-sm text-slate-400">
-              {isRunning && bpm > 0
-                ? 'Smooth visual pulses help you stay locked to the beat.'
-                : 'Dial in your tempo, then tap start for a pocket-perfect groove.'}
+              {!isRunning &&
+                bpm > 0 &&
+                'Dial in your tempo, then tap start for a pocket-perfect groove.'}
             </p>
           </div>
 
