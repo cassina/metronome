@@ -118,7 +118,7 @@ export default function MetronomeClient() {
                     </header>
                 )
             }
-            <section className="z-10 flex flex-1 items-center justify-center px-6 pb-12 pt-4">
+            <section className="z-10 flex items-center justify-center px-6 pb-12 pt-4">
                 <div className="flex w-full max-w-md flex-col items-center gap-8 rounded-[2.5rem] border border-white/10 bg-white/[0.05] px-6 py-9 text-center shadow-[0_40px_95px_rgba(5,8,24,0.7)] backdrop-blur-2xl sm:px-10 sm:py-12">
                     <div className="flex flex-col items-center gap-4">
             <span
