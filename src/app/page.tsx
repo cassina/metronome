@@ -2,10 +2,20 @@
 
 import { useEffect, useState } from 'react';
 
+import { TimeSignatureSelect } from '@/app/components/TimeSignatureSelect';
 import { useMetronome } from '@/lib/useMetronome';
 
 export default function MetronomeClient() {
-  const { bpm, setBpm, start, stop, isRunning, currentBeat } = useMetronome();
+  const {
+    bpm,
+    setBpm,
+    start,
+    stop,
+    isRunning,
+    currentBeat,
+    timeSignature,
+    setTimeSignature,
+  } = useMetronome();
   const [installEvent, setInstallEvent] =
     useState<BeforeInstallPromptEvent | null>(null);
 
@@ -32,6 +42,17 @@ export default function MetronomeClient() {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [bpm, isRunning, setBpm, start, stop]);
+
+  useEffect(() => {
+    const storedSignature = localStorage.getItem('timeSignatureKey');
+    if (storedSignature) {
+      setTimeSignature(storedSignature);
+    }
+  }, [setTimeSignature]);
+
+  useEffect(() => {
+    localStorage.setItem('timeSignatureKey', timeSignature);
+  }, [timeSignature]);
 
   const beatLabel =
     bpm === 0 || !isRunning ? 'Paused' : `${Math.max(currentBeat, 0) + 1}`;
@@ -192,6 +213,10 @@ export default function MetronomeClient() {
                 </span>
               </div>
             </label>
+            <TimeSignatureSelect
+              value={timeSignature}
+              onChange={(signature) => setTimeSignature(signature)}
+            />
           </div>
         </div>
       </section>
