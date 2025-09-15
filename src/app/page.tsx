@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 
 import { useMetronome } from '@/lib/useMetronome';
 
@@ -8,193 +8,165 @@ export default function MetronomeClient() {
   const { bpm, setBpm, start, stop, isRunning, currentBeat } = useMetronome();
   const [installEvent, setInstallEvent] =
     useState<BeforeInstallPromptEvent | null>(null);
+  const sliderId = useId();
+  const fineTuneId = useId();
 
   useEffect(() => {
-    const handler = (e: BeforeInstallPromptEvent) => {
-      e.preventDefault();
-      setInstallEvent(e);
+    const handler = (event: BeforeInstallPromptEvent) => {
+      event.preventDefault();
+      setInstallEvent(event);
     };
+
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.code === 'Space' || e.code === 'Enter') {
-        e.preventDefault();
+    const handler = (event: KeyboardEvent) => {
+      if (event.code === 'Space' || event.code === 'Enter') {
+        event.preventDefault();
         isRunning ? stop() : start();
-      } else if (e.code === 'ArrowUp') {
+      } else if (event.code === 'ArrowUp') {
         setBpm(bpm + 1);
-      } else if (e.code === 'ArrowDown') {
+      } else if (event.code === 'ArrowDown') {
         setBpm(bpm - 1);
       }
     };
+
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [bpm, isRunning, setBpm, start, stop]);
 
-  const beatLabel =
-    bpm === 0 || !isRunning ? 'Paused' : `${Math.max(currentBeat, 0) + 1}`;
+  const statusLabel = isRunning && bpm > 0 ? 'Playing' : 'Paused';
+  const showPausedOverlay = !isRunning || bpm <= 0;
+  const beatDisplay = isRunning && bpm > 0 ? Math.max(currentBeat, 0) + 1 : '—';
 
-  const buttonStateClasses = isRunning
-    ? 'from-[#5eead4] via-[#34d399] to-[#2dd4bf] text-slate-950 shadow-[0_28px_65px_rgba(45,212,191,0.35)] hover:shadow-[0_34px_75px_rgba(45,212,191,0.42)]'
-    : 'from-[#7c5cff] via-[#7c5cff] to-[#5eead4] text-white shadow-[0_34px_85px_rgba(124,92,255,0.5)] hover:shadow-[0_40px_95px_rgba(124,92,255,0.6)]';
-
-  const onInstall = () => {
-    installEvent?.prompt();
+  const handleInstall = () => {
+    void installEvent?.prompt();
     setInstallEvent(null);
   };
 
+  const updateBpm = (value: string) => {
+    const parsed = Number.parseInt(value, 10);
+    const clamped = Number.isNaN(parsed)
+      ? 0
+      : Math.min(Math.max(parsed, 0), 400);
+    setBpm(clamped);
+  };
+
   return (
-    <main className="relative flex min-h-screen flex-col overflow-hidden text-white">
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+    <main className='app-shell'>
+      <div className='metronome-card'>
         <div
-          className="absolute left-1/2 top-[-18%] h-80 w-80 -translate-x-1/2 rounded-full blur-3xl"
-          style={{
-            background:
-              'radial-gradient(circle at center, rgba(124, 92, 255, 0.35) 0%, rgba(124, 92, 255, 0) 70%)',
-          }}
-        />
-        <div
-          className="absolute bottom-[-20%] right-[-10%] h-80 w-80 rounded-full blur-3xl"
-          style={{
-            background:
-              'radial-gradient(circle at center, rgba(94, 234, 212, 0.28) 0%, rgba(94, 234, 212, 0) 70%)',
-          }}
-        />
-        <div
-          className="absolute left-[-20%] top-[35%] h-72 w-72 rounded-full blur-3xl"
-          style={{
-            background:
-              'radial-gradient(circle at center, rgba(79, 70, 229, 0.22) 0%, rgba(79, 70, 229, 0) 70%)',
-          }}
-        />
-      </div>
-
-      <header className="z-10 flex w-full justify-center px-6 pt-6">
-        <div className="flex w-full max-w-md items-center justify-between rounded-3xl border border-white/10 bg-white/10 px-5 py-4 shadow-[0_20px_55px_rgba(5,8,24,0.55)] backdrop-blur-xl">
-          <div className="flex items-center gap-3 text-left">
-            <span
-              aria-hidden="true"
-              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#7c5cff] via-[#6a5cff] to-[#5eead4] text-xl font-semibold text-white shadow-[0_0_30px_rgba(124,92,255,0.55)]"
-            >
-              ♫
-            </span>
-            <div className="flex flex-col leading-tight">
-              <span className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-200/80">
-                Pulse
-              </span>
-              <span className="font-display text-lg font-semibold text-white">
-                Pulse Metronome
-              </span>
-            </div>
-          </div>
-          {installEvent && (
-            <button
-              type="button"
-              className="rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-slate-100 transition-colors duration-200 hover:border-white/60 hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5eead4]"
-              onClick={onInstall}
-            >
-              Install
-            </button>
-          )}
+          className='status-chip'
+          data-state={statusLabel.toLowerCase()}
+          aria-live='polite'
+        >
+          {statusLabel}
         </div>
-      </header>
 
-      <section className="z-10 flex flex-1 items-center justify-center px-6 pb-12 pt-4">
-        <div className="flex w-full max-w-md flex-col items-center gap-8 rounded-[2.5rem] border border-white/10 bg-white/[0.05] px-6 py-9 text-center shadow-[0_40px_95px_rgba(5,8,24,0.7)] backdrop-blur-2xl sm:px-10 sm:py-12">
-          <div className="flex flex-col items-center gap-4">
-            <span
-              className="rounded-full border border-white/20 bg-white/10 px-4 py-1 text-7xl font-semibold uppercase tracking-[0.4em] text-slate-200"
-              aria-live="polite"
-            >
-              {beatLabel}
+        {installEvent && (
+          <button
+            type='button'
+            className='install-button'
+            onClick={handleInstall}
+          >
+            Install
+          </button>
+        )}
+
+        <div className='card-content'>
+          <div className='tempo-display'>
+            <span className='tempo-label'>Tempo</span>
+            <span className='tempo-value' aria-live='polite'>
+              {bpm}
             </span>
-            <div className="flex items-baseline gap-2">
-              <span className="font-display font-semibold text-white sm:text-7xl">
-                {bpm}
-              </span>
-              <span className="font-semibold uppercase tracking-[0.35em] text-slate-300">
-                bpm
-              </span>
-            </div>
-            <p className="max-w-[18rem] text-sm text-slate-400">
-              {!isRunning &&
-                bpm > 0 &&
-                'Dial in your tempo, then tap start for a pocket-perfect groove.'}
-            </p>
+            <span className='tempo-unit'>BPM</span>
           </div>
 
-          <div className="flex items-center justify-center gap-3">
-            {[0, 1, 2].map((beat) => {
-              const isActive = bpm > 0 && isRunning && currentBeat === beat;
-              const isDownbeat = beat === 0;
+          <div className='beat-section'>
+            <span className='beat-label'>Beat</span>
+            <div className='beat-pips' aria-hidden='true'>
+              {[0, 1, 2].map((beat) => {
+                const isActive = bpm > 0 && isRunning && currentBeat === beat;
 
-              return (
-                <span
-                  key={beat}
-                  aria-hidden="true"
-                  className={`h-3 w-12 rounded-full transition-all duration-300 ease-out ${
-                    isActive
-                      ? isDownbeat
-                        ? 'scale-110 bg-gradient-to-r from-[#7c5cff] via-[#6b5cff] to-[#5eead4] shadow-[0_0_40px_rgba(124,92,255,0.6)]'
-                        : 'scale-105 bg-gradient-to-r from-[#5eead4] via-[#34d399] to-[#22d3ee] shadow-[0_0_38px_rgba(94,234,212,0.55)]'
-                      : 'scale-90 bg-white/15 opacity-60'
-                  }`}
-                />
-              );
-            })}
+                return (
+                  <span
+                    key={beat}
+                    className={`beat-pip${isActive ? ' is-active' : ''}`}
+                  />
+                );
+              })}
+            </div>
+            <span className='beat-value' aria-live='polite'>
+              {beatDisplay}
+            </span>
           </div>
 
           <button
-            type="button"
+            type='button'
             aria-label={isRunning ? 'Stop metronome' : 'Start metronome'}
             aria-pressed={isRunning}
             onClick={isRunning ? stop : start}
-            className={`group relative flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-gradient-to-r px-10 py-4 text-sm font-semibold uppercase tracking-[0.35em] transition-all duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#5eead4] active:translate-y-[1px] ${buttonStateClasses}`}
+            className='start-stop-button'
+            data-state={statusLabel.toLowerCase()}
           >
-            <span className="text-base font-semibold tracking-[0.3em]">
-              {isRunning ? 'Stop' : 'Start'}
-            </span>
+            {isRunning ? 'Stop' : 'Start'}
           </button>
 
-          <div className="flex w-full flex-col gap-6 text-left">
-            <label className="flex flex-col gap-3">
-              <span className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.4em] text-slate-300/90">
-                <span>Beats Per Minute</span>
-                <span className="font-display text-base tracking-tight text-white">
-                  {bpm}
-                </span>
+          <div className='controls-stack'>
+            <label className='slider-control' htmlFor={sliderId}>
+              <span className='control-label'>
+                <span>Beats per minute</span>
+                <span className='control-label__value'>{bpm}</span>
               </span>
               <input
-                type="range"
+                id={sliderId}
+                type='range'
                 min={0}
                 max={400}
                 value={bpm}
-                onChange={(e) => setBpm(parseInt(e.target.value, 10))}
-                className="tempo-slider"
+                onChange={(event) => updateBpm(event.target.value)}
+                className='tempo-slider'
               />
             </label>
 
-            <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.4em] text-slate-300/80">
-              <span>Fine Tune</span>
-              <div className="flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.05] px-4 py-3 transition focus-within:border-[#5eead4]/60 focus-within:bg-white/[0.08] focus-within:shadow-[0_0_35px_rgba(94,234,212,0.25)]">
+            <label className='number-control' htmlFor={fineTuneId}>
+              <span className='control-heading'>Fine tune</span>
+              <div className='number-field'>
                 <input
-                  type="number"
+                  id={fineTuneId}
+                  type='number'
                   min={0}
                   max={400}
+                  inputMode='numeric'
                   value={bpm}
-                  onChange={(e) => setBpm(parseInt(e.target.value || '0', 10))}
-                  className="tempo-input"
+                  onChange={(event) => updateBpm(event.target.value || '0')}
+                  className='tempo-input'
                 />
-                <span className="text-sm font-medium tracking-normal text-slate-400">
-                  Type a precise tempo
+                <span className='number-hint'>
+                  Tap or type to adjust precisely
                 </span>
               </div>
             </label>
           </div>
         </div>
-      </section>
+
+        <div
+          className={`paused-overlay${
+            showPausedOverlay ? ' paused-overlay--visible' : ''
+          }`}
+          aria-hidden='true'
+        >
+          <div className='paused-overlay__content'>
+            <span className='paused-overlay__icon' aria-hidden='true'>
+              ⏸
+            </span>
+            <span className='paused-overlay__label'>Paused</span>
+            <span className='paused-overlay__helper'>Tap Start to play</span>
+          </div>
+        </div>
+      </div>
     </main>
   );
 }
