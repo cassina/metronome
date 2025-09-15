@@ -54,6 +54,7 @@ export default function MetronomeClient() {
         className="rounded bg-red-600 px-6 py-4 text-lg font-bold"
         aria-label={isRunning ? "Stop" : "Start"}
         onClick={isRunning ? stop : start}
+        type="button"
       >
         {isRunning ? "Stop" : "Start"}
       </button>
@@ -77,7 +78,11 @@ export default function MetronomeClient() {
         className="w-full max-w-sm"
       />
       {installEvent && (
-        <button className="rounded bg-blue-600 px-4 py-2" onClick={onInstall}>
+        <button
+          className="rounded bg-blue-600 px-4 py-2"
+          onClick={onInstall}
+          type="button"
+        >
           Install
         </button>
       )}
