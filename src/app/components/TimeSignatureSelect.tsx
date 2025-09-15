@@ -1,3 +1,5 @@
+'use client';
+
 import type { ChangeEvent } from 'react';
 
 type SignatureMap = typeof import('@/lib/useMetronome').SIGNATURES;

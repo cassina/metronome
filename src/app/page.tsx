@@ -15,6 +15,7 @@ export default function MetronomeClient() {
     currentBeat,
     timeSignature,
     setTimeSignature,
+    pulsesInBar,
   } = useMetronome();
   const [installEvent, setInstallEvent] =
     useState<BeforeInstallPromptEvent | null>(null);
@@ -147,7 +148,10 @@ export default function MetronomeClient() {
           </div>
 
           <div className="flex items-center justify-center gap-3">
-            {[0, 1, 2].map((beat) => {
+            {Array.from(
+              { length: Math.max(pulsesInBar, 1) },
+              (_, beat) => beat,
+            ).map((beat) => {
               const isActive = bpm > 0 && isRunning && currentBeat === beat;
               const isDownbeat = beat === 0;
 
