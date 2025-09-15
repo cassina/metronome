@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { TimeSignatureSelect } from '@/app/components/TimeSignatureSelect';
 import { useMetronome } from '@/lib/useMetronome';
@@ -19,6 +19,7 @@ export default function MetronomeClient() {
   } = useMetronome();
   const [installEvent, setInstallEvent] =
     useState<BeforeInstallPromptEvent | null>(null);
+  const hasHydratedTimeSignature = useRef(false);
 
   useEffect(() => {
     const handler = (e: BeforeInstallPromptEvent) => {
@@ -45,15 +46,23 @@ export default function MetronomeClient() {
   }, [bpm, isRunning, setBpm, start, stop]);
 
   useEffect(() => {
-    const storedSignature = localStorage.getItem('timeSignatureKey');
-    if (storedSignature) {
-      setTimeSignature(storedSignature);
+    if (hasHydratedTimeSignature.current) {
+      localStorage.setItem('timeSignatureKey', timeSignature);
     }
-  }, [setTimeSignature]);
+  }, [timeSignature]);
 
   useEffect(() => {
-    localStorage.setItem('timeSignatureKey', timeSignature);
-  }, [timeSignature]);
+    if (hasHydratedTimeSignature.current) {
+      return;
+    }
+
+    const storedSignature = localStorage.getItem('timeSignatureKey');
+    if (storedSignature && storedSignature !== timeSignature) {
+      setTimeSignature(storedSignature);
+    }
+
+    hasHydratedTimeSignature.current = true;
+  }, [setTimeSignature, timeSignature]);
 
   const beatLabel =
     bpm === 0 || !isRunning ? 'Paused' : `${Math.max(currentBeat, 0) + 1}`;
