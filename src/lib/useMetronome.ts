@@ -41,7 +41,8 @@ export function useMetronome(initialBpm = 120) {
   }
 
   function scheduler() {
-    const ctx = ctxRef.current!;
+    const ctx = ctxRef.current;
+    if (!ctx) return;
     while (nextNoteTime.current < ctx.currentTime + SCHEDULE_AHEAD) {
       scheduleClick(ctx, nextNoteTime.current, beatRef.current === 0);
       nextNoteTime.current += 60 / bpmRef.current;
@@ -53,7 +54,8 @@ export function useMetronome(initialBpm = 120) {
   function start() {
     if (isRunning || bpmRef.current <= 0) return;
     init();
-    const ctx = ctxRef.current!;
+    const ctx = ctxRef.current;
+    if (!ctx) return;
     nextNoteTime.current = ctx.currentTime;
     timer.current = window.setInterval(scheduler, LOOK_AHEAD);
     setIsRunning(true);
