@@ -1,8 +1,44 @@
-import { useEffect, useRef, useState } from "react";
+import { type MutableRefObject, useEffect, useRef, useState } from "react";
 import { scheduleClick } from "./audio";
 
 const LOOK_AHEAD = 25; // ms
 const SCHEDULE_AHEAD = 0.1; // seconds
+const BEATS_PER_MEASURE = 3;
+
+type ScheduleFn = (ctx: AudioContext, time: number, accent: boolean) => void;
+
+interface SchedulerOptions {
+  ctx: AudioContext;
+  beatRef: MutableRefObject<number>;
+  nextNoteTime: MutableRefObject<number>;
+  bpm: number;
+  scheduleAhead: number;
+  scheduleClickFn: ScheduleFn;
+  onBeat: (beat: number) => void;
+}
+
+export function runMetronomeScheduler({
+  ctx,
+  beatRef,
+  nextNoteTime,
+  bpm,
+  scheduleAhead,
+  scheduleClickFn,
+  onBeat,
+}: SchedulerOptions) {
+  if (bpm <= 0) return;
+
+  while (nextNoteTime.current < ctx.currentTime + scheduleAhead) {
+    const beat = beatRef.current;
+    const isDownBeat = beat === 0;
+
+    scheduleClickFn(ctx, nextNoteTime.current, isDownBeat);
+    onBeat(beat);
+
+    nextNoteTime.current += 60 / bpm;
+    beatRef.current = (beat + 1) % BEATS_PER_MEASURE;
+  }
+}
 
 export function useMetronome(initialBpm = 120) {
   const [bpm, setBpmState] = useState(initialBpm);
@@ -39,13 +75,15 @@ export function useMetronome(initialBpm = 120) {
   function scheduler() {
     const ctx = ctxRef.current;
     if (!ctx) return;
-    while (nextNoteTime.current < ctx.currentTime + SCHEDULE_AHEAD) {
-      const isDownBeat = beatRef.current === 0;
-      scheduleClick(ctx, nextNoteTime.current, isDownBeat);
-      setCurrentBeat(beatRef.current);
-      nextNoteTime.current += 60 / bpmRef.current;
-      beatRef.current = (beatRef.current + 1) % 3;
-    }
+    runMetronomeScheduler({
+      ctx,
+      beatRef,
+      nextNoteTime,
+      bpm: bpmRef.current,
+      scheduleAhead: SCHEDULE_AHEAD,
+      scheduleClickFn: scheduleClick,
+      onBeat: setCurrentBeat,
+    });
   }
 
   function start() {
