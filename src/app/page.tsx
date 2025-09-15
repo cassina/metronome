@@ -32,7 +32,8 @@ export default function MetronomeClient() {
     return () => window.removeEventListener("keydown", handler);
   }, [bpm, isRunning, setBpm, start, stop]);
 
-  const status = bpm === 0 || !isRunning ? "Paused" : `Beat ${currentBeat + 1}`;
+  const status =
+    bpm === 0 || !isRunning ? "Paused" : `Beat ${Math.max(currentBeat, 0) + 1}`;
 
   const onInstall = () => {
     installEvent?.prompt();
@@ -51,6 +52,7 @@ export default function MetronomeClient() {
         ))}
       </div>
       <button
+        type="button"
         className="rounded bg-red-600 px-6 py-4 text-lg font-bold"
         aria-label={isRunning ? "Stop" : "Start"}
         onClick={isRunning ? stop : start}
@@ -79,9 +81,9 @@ export default function MetronomeClient() {
       />
       {installEvent && (
         <button
+          type="button"
           className="rounded bg-blue-600 px-4 py-2"
           onClick={onInstall}
-          type="button"
         >
           Install
         </button>
