@@ -56,6 +56,7 @@ export default function MetronomeClient() {
         className="rounded bg-red-600 px-6 py-4 text-lg font-bold"
         aria-label={isRunning ? "Stop" : "Start"}
         onClick={isRunning ? stop : start}
+        type="button"
       >
         {isRunning ? "Stop" : "Start"}
       </button>
