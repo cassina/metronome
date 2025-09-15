@@ -8,7 +8,7 @@ export function useMetronome(initialBpm = 120) {
   const [bpm, setBpmState] = useState(initialBpm);
   const bpmRef = useRef(bpm);
   const [isRunning, setIsRunning] = useState(false);
-  const [currentBeat, setCurrentBeat] = useState(0);
+  const [currentBeat, setCurrentBeat] = useState(-1);
   const beatRef = useRef(0);
   const nextNoteTime = useRef(0);
   const timer = useRef<number>(0);
@@ -27,10 +27,6 @@ export function useMetronome(initialBpm = 120) {
     }
   }, []);
 
-  useEffect(() => {
-    beatRef.current = currentBeat;
-  }, [currentBeat]);
-
   function init() {
     if (!ctxRef.current) {
       ctxRef.current = new AudioContext();
@@ -44,10 +40,11 @@ export function useMetronome(initialBpm = 120) {
     const ctx = ctxRef.current;
     if (!ctx) return;
     while (nextNoteTime.current < ctx.currentTime + SCHEDULE_AHEAD) {
-      scheduleClick(ctx, nextNoteTime.current, beatRef.current === 0);
+      const isDownBeat = beatRef.current === 0;
+      scheduleClick(ctx, nextNoteTime.current, isDownBeat);
+      setCurrentBeat(beatRef.current);
       nextNoteTime.current += 60 / bpmRef.current;
       beatRef.current = (beatRef.current + 1) % 3;
-      setCurrentBeat(beatRef.current);
     }
   }
 
@@ -57,15 +54,16 @@ export function useMetronome(initialBpm = 120) {
     const ctx = ctxRef.current;
     if (!ctx) return;
     nextNoteTime.current = ctx.currentTime;
-    timer.current = window.setInterval(scheduler, LOOK_AHEAD);
     setIsRunning(true);
+    scheduler();
+    timer.current = window.setInterval(scheduler, LOOK_AHEAD);
   }
 
   function stop() {
     if (!isRunning) return;
     window.clearInterval(timer.current);
     setIsRunning(false);
-    setCurrentBeat(0);
+    setCurrentBeat(-1);
     beatRef.current = 0;
   }
 
