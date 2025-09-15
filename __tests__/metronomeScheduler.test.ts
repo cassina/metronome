@@ -1,8 +1,8 @@
-import { describe, expect, it, vi } from "vitest";
-import { runMetronomeScheduler } from "../src/lib/useMetronome";
+import { describe, expect, it, vi } from 'vitest';
+import { runMetronomeScheduler } from '../src/lib/useMetronome';
 
-describe("runMetronomeScheduler", () => {
-  it("reports the downbeat as the first visual beat", () => {
+describe('runMetronomeScheduler', () => {
+  it('reports the downbeat as the first visual beat', () => {
     const beatRef = { current: 0 };
     const nextNoteTime = { current: 0 };
     const ctx = { currentTime: 0 } as unknown as AudioContext;
