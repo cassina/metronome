@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { scheduleClick } from './audio';
+import { useEffect, useRef, useState } from "react";
+import { scheduleClick } from "./audio";
 
 const LOOK_AHEAD = 25; // ms
 const SCHEDULE_AHEAD = 0.1; // seconds
@@ -11,16 +11,16 @@ export function useMetronome(initialBpm = 120) {
   const [currentBeat, setCurrentBeat] = useState(0);
   const beatRef = useRef(0);
   const nextNoteTime = useRef(0);
-  const timer = useRef<number>();
+  const timer = useRef<number>(0);
   const ctxRef = useRef<AudioContext | null>(null);
 
   useEffect(() => {
     bpmRef.current = bpm;
-    localStorage.setItem('last-bpm', String(bpm));
+    localStorage.setItem("last-bpm", String(bpm));
   }, [bpm]);
 
   useEffect(() => {
-    const stored = localStorage.getItem('last-bpm');
+    const stored = localStorage.getItem("last-bpm");
     if (stored) {
       const val = parseInt(stored, 10);
       if (!Number.isNaN(val)) setBpmState(val);
@@ -35,7 +35,7 @@ export function useMetronome(initialBpm = 120) {
     if (!ctxRef.current) {
       ctxRef.current = new AudioContext();
     }
-    if (ctxRef.current.state === 'suspended') {
+    if (ctxRef.current.state === "suspended") {
       ctxRef.current.resume();
     }
   }

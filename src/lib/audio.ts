@@ -1,4 +1,8 @@
-export function scheduleClick(ctx: AudioContext, time: number, accent: boolean) {
+export function scheduleClick(
+  ctx: AudioContext,
+  time: number,
+  accent: boolean,
+) {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.connect(gain);
@@ -8,7 +12,7 @@ export function scheduleClick(ctx: AudioContext, time: number, accent: boolean) 
   const duration = accent ? 0.03 : 0.02;
   osc.start(time);
   osc.stop(time + duration);
-  if (accent && 'vibrate' in navigator) {
+  if (accent && "vibrate" in navigator) {
     const delay = Math.max(time - ctx.currentTime, 0);
     window.setTimeout(() => navigator.vibrate([30, 10, 10]), delay * 1000);
   }
