@@ -25,6 +25,7 @@
 *.pem
 .idea
 *.iml
+.diff
 
 # debug
 npm-debug.log*
