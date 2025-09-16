@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter, Space_Grotesk } from 'next/font/google';
+
+import { APP_DESCRIPTION, APP_TITLE, HTML_LANGUAGE } from '@/lib/constants';
+
 import './globals.css';
 
 const inter = Inter({
@@ -15,8 +18,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: 'Metronome',
-  description: 'Simple PWA metronome',
+  title: APP_TITLE,
+  description: APP_DESCRIPTION,
 };
 
 export default function RootLayout({
@@ -25,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang={HTML_LANGUAGE}>
       <head>
         <meta name="theme-color" content="#050918" />
         <link rel="manifest" href="/manifest.webmanifest" />

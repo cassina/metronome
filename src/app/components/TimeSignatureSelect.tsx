@@ -2,6 +2,8 @@
 
 import type { ChangeEvent } from 'react';
 
+import { TIME_SIGNATURE_LABEL } from '@/lib/constants';
+
 type SignatureMap = typeof import('@/lib/useMetronome').SIGNATURES;
 type TimeSignatureKey = keyof SignatureMap;
 
@@ -29,10 +31,10 @@ export function TimeSignatureSelect({
 
   return (
     <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.4em] text-[var(--text-muted)]">
-      <span>Time signature</span>
+      <span>{TIME_SIGNATURE_LABEL}</span>
       <div className="relative flex items-center">
         <select
-          aria-label="Time signature"
+          aria-label={TIME_SIGNATURE_LABEL}
           value={value}
           onChange={handleChange}
           className="w-full appearance-none rounded-full border border-[color:var(--accent-secondary-soft)] bg-[var(--surface)] px-4 py-3 pr-12 text-left text-sm font-medium tracking-[0.2em] text-[#f5f5f5] transition focus:border-[var(--accent-secondary)] focus:bg-[var(--surface-strong)] focus:outline-none focus:ring-2 focus:ring-[rgba(255,90,0,0.35)]"

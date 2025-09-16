@@ -3,6 +3,17 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { TimeSignatureSelect } from '@/app/components/TimeSignatureSelect';
+import {
+  BPM_LABEL,
+  BPM_UNIT,
+  INSTALL_BUTTON_LABEL,
+  METRONOME_BEAT_LABEL,
+  METRONOME_START_ARIA_LABEL,
+  METRONOME_START_LABEL,
+  METRONOME_STATUS_PAUSED,
+  METRONOME_STOP_ARIA_LABEL,
+  METRONOME_STOP_LABEL,
+} from '@/lib/constants';
 import { useMetronome } from '@/lib/useMetronome';
 
 export default function MetronomeClient() {
@@ -26,12 +37,17 @@ export default function MetronomeClient() {
   const getBeatAriaLabel = (
     metronomeStatus: MetronomeStatus,
     display: string,
-  ): string => (metronomeStatus === 'paused' ? 'Paused' : `Beat ${display}`);
+  ): string =>
+    metronomeStatus === 'paused'
+      ? METRONOME_STATUS_PAUSED
+      : `${METRONOME_BEAT_LABEL} ${display}`;
 
   const status: MetronomeStatus =
     bpm === 0 || !isRunning ? 'paused' : 'running';
   const beatDisplay: string =
-    status === 'paused' ? 'Paused' : String(Math.max(currentBeat, 0) + 1);
+    status === 'paused'
+      ? METRONOME_STATUS_PAUSED
+      : String(Math.max(currentBeat, 0) + 1);
   const labelSize = status === 'paused' ? 'text-4xl' : 'text-7xl';
   const labelTone =
     status === 'paused'
@@ -128,7 +144,7 @@ export default function MetronomeClient() {
               style={{ borderColor: 'var(--accent-secondary-soft)' }}
               onClick={onInstall}
             >
-              Install
+              {INSTALL_BUTTON_LABEL}
             </button>
           </div>
         </header>
@@ -153,7 +169,7 @@ export default function MetronomeClient() {
                 {bpm}
               </span>
               <span className="font-semibold uppercase tracking-[0.35em] text-[var(--text-muted)]">
-                bpm
+                {BPM_UNIT}
               </span>
             </div>
           </div>
@@ -192,20 +208,22 @@ export default function MetronomeClient() {
 
           <button
             type="button"
-            aria-label={isRunning ? 'Stop metronome' : 'Start metronome'}
+            aria-label={
+              isRunning ? METRONOME_STOP_ARIA_LABEL : METRONOME_START_ARIA_LABEL
+            }
             aria-pressed={isRunning}
             onClick={isRunning ? stop : start}
             className={`group relative flex w-full max-w-xs items-center justify-center gap-2 rounded-full px-10 py-4 text-sm font-semibold uppercase tracking-[0.35em] transition-all duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent-secondary)] active:translate-y-[1px] active:shadow-[0_0_28px_rgba(255,90,0,0.55)] ${buttonStateClasses}`}
           >
             <span className="text-base font-semibold tracking-[0.3em]">
-              {isRunning ? 'Stop' : 'Start'}
+              {isRunning ? METRONOME_STOP_LABEL : METRONOME_START_LABEL}
             </span>
           </button>
 
           <div className="flex w-full flex-col gap-6 text-left">
             <label className="flex flex-col gap-3">
               <span className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.4em] text-[var(--text-muted)]">
-                <span>Beats Per Minute</span>
+                <span>{BPM_LABEL}</span>
                 <span className="font-display text-base tracking-tight text-[#f5f5f5]">
                   {bpm}
                 </span>
