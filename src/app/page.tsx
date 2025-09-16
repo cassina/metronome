@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import { SoundSelect } from '@/app/components/SoundSelect';
 import { TimeSignatureSelect } from '@/app/components/TimeSignatureSelect';
 import {
   BPM_LABEL,
@@ -27,6 +28,8 @@ export default function MetronomeClient() {
     timeSignature,
     setTimeSignature,
     pulsesInBar,
+    soundKind,
+    setSoundKind,
   } = useMetronome();
   const [installEvent, setInstallEvent] =
     useState<BeforeInstallPromptEvent | null>(null);
@@ -297,6 +300,7 @@ export default function MetronomeClient() {
               value={timeSignature}
               onChange={(signature) => setTimeSignature(signature)}
             />
+            <SoundSelect value={soundKind} onChange={setSoundKind} />
           </div>
         </div>
       </section>
