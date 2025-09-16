@@ -1,9 +1,11 @@
 import type { NextConfig } from 'next';
 import withPWA from 'next-pwa';
 
-const config: NextConfig = {};
+const config: NextConfig = {
+    turbopack: {},
+};
 
-export default withPWA({
+const withPWAPreset = withPWA({
     dest: 'public',
     disable: process.env.NODE_ENV === 'development',
     register: true,
@@ -11,4 +13,11 @@ export default withPWA({
     fallbacks: {
         document: '/offline',
     },
-})(config);
+});
+
+const isTurbopack =
+    process.env.NEXT_RUNTIME === 'turbopack' || process.env.NEXT_TURBOPACK === '1';
+
+const nextConfig = isTurbopack ? config : withPWAPreset(config);
+
+export default nextConfig;
