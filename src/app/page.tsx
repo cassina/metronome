@@ -21,6 +21,23 @@ export default function MetronomeClient() {
     useState<BeforeInstallPromptEvent | null>(null);
   const hasHydratedTimeSignature = useRef(false);
 
+  type MetronomeStatus = 'paused' | 'running';
+
+  const getBeatAriaLabel = (
+    metronomeStatus: MetronomeStatus,
+    display: string,
+  ): string => (metronomeStatus === 'paused' ? 'Paused' : `Beat ${display}`);
+
+  const status: MetronomeStatus =
+    bpm === 0 || !isRunning ? 'paused' : 'running';
+  const beatDisplay: string =
+    status === 'paused' ? 'Paused' : String(Math.max(currentBeat, 0) + 1);
+  const labelSize = status === 'paused' ? 'text-4xl' : 'text-7xl';
+  const labelTone =
+    status === 'paused'
+      ? 'border-white/10 bg-white/5 shadow-none'
+      : 'border-white/20 bg-white/10 shadow-[var(--glow)]';
+
   useEffect(() => {
     const handler = (e: BeforeInstallPromptEvent) => {
       e.preventDefault();
@@ -63,9 +80,6 @@ export default function MetronomeClient() {
 
     hasHydratedTimeSignature.current = true;
   }, [setTimeSignature, timeSignature]);
-
-  const beatLabel =
-    bpm === 0 || !isRunning ? 'Paused' : `${Math.max(currentBeat, 0) + 1}`;
 
   const buttonStateClasses = isRunning
     ? 'bg-[#c74a00] text-[#f5f5f5] shadow-[var(--glow)] hover:bg-[#ff6e1f] hover:shadow-[0_0_48px_rgba(255,90,0,0.7)]'
@@ -125,12 +139,14 @@ export default function MetronomeClient() {
           style={{ borderColor: 'var(--accent-secondary-soft)' }}
         >
           <div className="flex flex-col items-center gap-4">
+            {/* biome-ignore lint/a11y/useSemanticElements: role='status' requested for the label */}
             <span
-              className="rounded-full border bg-[rgba(0,0,0,0.38)] px-4 py-1 text-7xl font-semibold uppercase tracking-[0.4em] text-[#f5f5f5]"
-              style={{ borderColor: 'var(--accent-secondary)' }}
+              role="status"
               aria-live="polite"
+              aria-label={getBeatAriaLabel(status, beatDisplay)}
+              className={`select-none rounded-full border px-4 py-1 font-semibold uppercase tracking-[0.4em] text-slate-200 ${labelSize} ${labelTone}`}
             >
-              {beatLabel}
+              {beatDisplay}
             </span>
             <div className="flex items-baseline gap-2">
               <span className="font-display font-semibold text-[#f5f5f5] sm:text-7xl">
