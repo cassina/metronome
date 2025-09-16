@@ -1,7 +1,9 @@
 import type { NextConfig } from 'next';
 import withPWA from 'next-pwa';
 
-const config: NextConfig = {};
+const config: NextConfig = {
+    turbopack: {},
+};
 
 export default withPWA({
   dest: 'public',
