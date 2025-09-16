@@ -1,5 +1,5 @@
 import { type MutableRefObject, useEffect, useRef, useState } from 'react';
-import { scheduleClick } from './audio';
+import { createPlayTick } from './audio';
 
 const LOOK_AHEAD = 25; // ms
 const SCHEDULE_AHEAD = 0.1; // seconds
@@ -13,9 +13,13 @@ export const SIGNATURES = {
   '12/8': { pulses: 4 },
 } as const;
 
+export type SoundKind = 'click' | 'wood' | 'hihat';
+
 type TimeSignature = keyof typeof SIGNATURES;
 
 type ScheduleFn = (ctx: AudioContext, time: number, accent: boolean) => void;
+
+type PlayTick = (soundKind: SoundKind, accent: boolean, when: number) => void;
 
 interface SchedulerOptions {
   ctx: AudioContext;
@@ -66,6 +70,7 @@ export function useMetronome(initialBpm = 120) {
   const [isRunning, setIsRunning] = useState(false);
   const [currentPulse, setCurrentPulse] = useState(-1);
   const [timeSignature, setTimeSignatureState] = useState<TimeSignature>('3/4');
+  const [soundKindState, setSoundKindState] = useState<SoundKind>('click');
   const beatRef = useRef(0);
   const nextNoteTime = useRef(0);
   const timer = useRef<number>(0);
@@ -73,6 +78,8 @@ export function useMetronome(initialBpm = 120) {
   const timeSignatureRef = useRef<TimeSignature>('3/4');
   const pulsesRef = useRef<number>(SIGNATURES['3/4'].pulses);
   const pendingSignatureRef = useRef<TimeSignature | null>(null);
+  const soundKindRef = useRef<SoundKind>('click');
+  const playTickRef = useRef<PlayTick | null>(null);
 
   useEffect(() => {
     bpmRef.current = bpm;
@@ -87,25 +94,56 @@ export function useMetronome(initialBpm = 120) {
     }
   }, []);
 
+  useEffect(() => {
+    const stored = localStorage.getItem('soundKind');
+    if (isSoundKind(stored)) {
+      soundKindRef.current = stored;
+      setSoundKindState(stored);
+    } else {
+      localStorage.setItem('soundKind', 'click');
+    }
+  }, []);
+
+  useEffect(() => {
+    soundKindRef.current = soundKindState;
+  }, [soundKindState]);
+
   function init() {
     if (!ctxRef.current) {
       ctxRef.current = new AudioContext();
     }
-    if (ctxRef.current.state === 'suspended') {
-      ctxRef.current.resume();
+    const ctx = ctxRef.current;
+    if (!ctx) return;
+
+    if (!playTickRef.current) {
+      playTickRef.current = createPlayTick(ctx);
+    }
+
+    if (ctx.state === 'suspended') {
+      ctx.resume();
     }
   }
 
   function scheduler() {
     const ctx = ctxRef.current;
     if (!ctx) return;
+
+    if (!playTickRef.current) {
+      playTickRef.current = createPlayTick(ctx);
+    }
+
     runMetronomeScheduler({
       ctx,
       beatRef,
       nextNoteTime,
       bpm: bpmRef.current,
       scheduleAhead: SCHEDULE_AHEAD,
-      scheduleClickFn: scheduleClick,
+      scheduleClickFn: (_ctx, time, accent) => {
+        const playTick = playTickRef.current;
+        if (playTick) {
+          playTick(soundKindRef.current, accent, time);
+        }
+      },
       onBeat: setCurrentPulse,
       pulsesRef,
       onBeforeSchedule: () => {
@@ -172,6 +210,12 @@ export function useMetronome(initialBpm = 120) {
     pendingSignatureRef.current = value;
   }
 
+  function setSoundKind(kind: SoundKind) {
+    soundKindRef.current = kind;
+    setSoundKindState(kind);
+    localStorage.setItem('soundKind', kind);
+  }
+
   const pulsesInBar = SIGNATURES[timeSignature].pulses;
   const currentBeat = currentPulse;
 
@@ -186,9 +230,15 @@ export function useMetronome(initialBpm = 120) {
     timeSignature,
     setTimeSignature,
     pulsesInBar,
+    soundKind: soundKindState,
+    setSoundKind,
   };
 }
 
 function isTimeSignature(value: string): value is TimeSignature {
   return value in SIGNATURES;
+}
+
+function isSoundKind(value: string | null): value is SoundKind {
+  return value === 'click' || value === 'wood' || value === 'hihat';
 }
