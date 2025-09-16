@@ -3,16 +3,16 @@
 :root {
   --bg-from: #2c2c2c;
   --bg-to: #1a1a1a;
-  --accent-primary: #ff5a00;
-  --accent-secondary: #005f63;
-  --accent-secondary-strong: rgba(0, 95, 99, 0.7);
-  --accent-secondary-soft: rgba(0, 95, 99, 0.45);
+  --accent-primary: #1b5e20;
+  --accent-secondary: #2e7d32;
+  --accent-secondary-strong: rgba(46, 125, 50, 0.75);
+  --accent-secondary-soft: rgba(46, 125, 50, 0.45);
   --text: #f5f5f5;
   --text-muted: #a0a0a0;
   --surface: rgba(255, 255, 255, 0.06);
   --surface-strong: rgba(255, 255, 255, 0.12);
   --border-soft: rgba(160, 160, 160, 0.18);
-  --glow: 0 0 12px rgba(255, 90, 0, 0.65);
+  --glow: 0 0 12px rgba(46, 125, 50, 0.65);
   --shadow-strong: rgba(0, 0, 0, 0.65);
   --gradient-background: linear-gradient(
     to bottom,
@@ -55,7 +55,7 @@ body {
 }
 
 .tempo-slider:focus-visible {
-  outline: 2px solid rgba(255, 90, 0, 0.65);
+  outline: 2px solid rgba(46, 125, 50, 0.65);
   outline-offset: 6px;
 }
 
@@ -65,7 +65,7 @@ body {
   background: linear-gradient(
     90deg,
     var(--accent-secondary-strong),
-    rgba(255, 90, 0, 0.45)
+    rgba(27, 94, 32, 0.45)
   );
   border: 1px solid rgba(245, 245, 245, 0.08);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
@@ -77,7 +77,7 @@ body {
   background: linear-gradient(
     90deg,
     var(--accent-secondary-strong),
-    rgba(255, 90, 0, 0.45)
+    rgba(27, 94, 32, 0.45)
   );
   border: 1px solid rgba(245, 245, 245, 0.08);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
@@ -118,7 +118,7 @@ body {
 .tempo-slider:active::-moz-range-thumb {
   transform: scale(0.94);
   box-shadow:
-    0 12px 22px rgba(255, 90, 0, 0.55),
+    0 12px 22px rgba(46, 125, 50, 0.55),
     0 0 0 1px rgba(255, 255, 255, 0.2);
 }
 
@@ -145,7 +145,7 @@ body {
 .tempo-input:focus {
   outline: none;
   border-color: var(--accent-secondary-strong);
-  box-shadow: 0 0 0 6px rgba(255, 90, 0, 0.12);
+  box-shadow: 0 0 0 6px rgba(46, 125, 50, 0.16);
   background: var(--surface-strong);
 }
 
