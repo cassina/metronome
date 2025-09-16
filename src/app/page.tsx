@@ -30,6 +30,7 @@ export default function MetronomeClient() {
   } = useMetronome();
   const [installEvent, setInstallEvent] =
     useState<BeforeInstallPromptEvent | null>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
   const hasHydratedTimeSignature = useRef(false);
 
   type MetronomeStatus = 'paused' | 'running';
@@ -61,6 +62,53 @@ export default function MetronomeClient() {
     };
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  useEffect(() => {
+    const getInstallationStatus = () => {
+      const isStandalone = window.matchMedia(
+        '(display-mode: standalone)',
+      ).matches;
+      const nav = window.navigator as Navigator & { standalone?: boolean };
+      return isStandalone || nav.standalone === true;
+    };
+
+    const updateInstallationStatus = () => {
+      setIsInstalled(getInstallationStatus());
+    };
+
+    const handleDisplayModeChange = () => {
+      updateInstallationStatus();
+    };
+
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      setInstallEvent(null);
+    };
+
+    updateInstallationStatus();
+
+    const displayModeMediaQuery = window.matchMedia(
+      '(display-mode: standalone)',
+    );
+    if (typeof displayModeMediaQuery.addEventListener === 'function') {
+      displayModeMediaQuery.addEventListener('change', handleDisplayModeChange);
+    } else if (typeof displayModeMediaQuery.addListener === 'function') {
+      displayModeMediaQuery.addListener(handleDisplayModeChange);
+    }
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      if (typeof displayModeMediaQuery.removeEventListener === 'function') {
+        displayModeMediaQuery.removeEventListener(
+          'change',
+          handleDisplayModeChange,
+        );
+      } else if (typeof displayModeMediaQuery.removeListener === 'function') {
+        displayModeMediaQuery.removeListener(handleDisplayModeChange);
+      }
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
   }, []);
 
   useEffect(() => {
@@ -102,9 +150,14 @@ export default function MetronomeClient() {
     : 'bg-[var(--accent-primary)] text-[#f5f5f5] shadow-[var(--glow)] hover:bg-[#ff6e1f] hover:shadow-[0_0_48px_rgba(255,90,0,0.75)]';
 
   const onInstall = () => {
-    installEvent?.prompt();
+    if (!installEvent) {
+      return;
+    }
+    installEvent.prompt();
     setInstallEvent(null);
   };
+
+  const isInstallButtonDisabled = !installEvent;
 
   return (
     <main className="relative flex min-h-screen flex-col overflow-hidden text-[#f5f5f5]">
@@ -132,7 +185,7 @@ export default function MetronomeClient() {
         />
       </div>
 
-      {installEvent && (
+      {!isInstalled && (
         <header className="z-10 flex w-full justify-center px-6 pt-6">
           <div
             className="flex w-full max-w-md items-center justify-between rounded-3xl border bg-[rgba(0,0,0,0.35)] px-5 py-4 shadow-[0_20px_55px_rgba(0,0,0,0.55)] backdrop-blur-xl"
@@ -140,7 +193,8 @@ export default function MetronomeClient() {
           >
             <button
               type="button"
-              className="rounded-full border bg-[rgba(255,255,255,0.08)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-[#f5f5f5] transition-colors duration-200 hover:border-[color:var(--accent-secondary)] hover:bg-[rgba(255,255,255,0.12)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-secondary)]"
+              disabled={isInstallButtonDisabled}
+              className="rounded-full border bg-[rgba(255,255,255,0.08)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-[#f5f5f5] transition-colors duration-200 hover:border-[color:var(--accent-secondary)] hover:bg-[rgba(255,255,255,0.12)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-secondary)] disabled:cursor-not-allowed disabled:opacity-60"
               style={{ borderColor: 'var(--accent-secondary-soft)' }}
               onClick={onInstall}
             >
