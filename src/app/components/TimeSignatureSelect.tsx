@@ -37,7 +37,7 @@ export function TimeSignatureSelect({
           aria-label={TIME_SIGNATURE_LABEL}
           value={value}
           onChange={handleChange}
-          className="w-full appearance-none rounded-full border border-[color:var(--accent-secondary-soft)] bg-[var(--surface)] px-4 py-3 pr-12 text-left text-sm font-medium tracking-[0.2em] text-[#f5f5f5] transition focus:border-[var(--accent-secondary)] focus:bg-[var(--surface-strong)] focus:outline-none focus:ring-2 focus:ring-[rgba(255,90,0,0.35)]"
+          className="w-full appearance-none rounded-full border border-[color:var(--accent-secondary-soft)] bg-[var(--surface)] px-4 py-3 pr-12 text-left text-sm font-medium tracking-[0.2em] text-[#f5f5f5] transition focus:border-[var(--accent-secondary)] focus:bg-[var(--surface-strong)] focus:outline-none focus:ring-2 focus:ring-[rgba(46,125,50,0.35)]"
         >
           {TIME_SIGNATURE_OPTIONS.map((option) => (
             <option key={option} value={option} className="text-[#1a1a1a]">
